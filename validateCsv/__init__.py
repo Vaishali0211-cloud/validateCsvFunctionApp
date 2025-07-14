@@ -7,15 +7,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("validateCsv function triggered.")
 
     try:
-        # This is how to read a file from form-data (like Postman)
-        formdata = req.files
-        if 'file' not in formdata:
-            return func.HttpResponse("No file uploaded", status_code=400)
+        # Read raw body as bytes
+        file_bytes = req.get_body()
 
-        file = formdata['file']
-        contents = file.read()
-        df = pd.read_csv(io.BytesIO(contents))
+        # Try reading it as CSV
+        df = pd.read_csv(io.BytesIO(file_bytes))
 
+        # Check required columns
         if 'EmployeeID' not in df.columns or 'Name' not in df.columns:
             return func.HttpResponse("Invalid CSV: Missing EmployeeID or Name", status_code=400)
 
