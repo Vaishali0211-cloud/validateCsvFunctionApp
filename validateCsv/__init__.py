@@ -4,13 +4,11 @@ import pandas as pd
 import io
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    try:
-        file = req.files.get('file')
-        if not file:
-            return func.HttpResponse("No file uploaded", status_code=400)
+    logging.info("validateCsv function triggered.")
 
-        contents = file.read()
-        df = pd.read_csv(io.BytesIO(contents))
+    try:
+        req_body = req.get_body()
+        df = pd.read_csv(io.BytesIO(req_body))
 
         if 'EmployeeID' not in df.columns or 'Name' not in df.columns:
             return func.HttpResponse("Invalid CSV: Missing EmployeeID or Name", status_code=400)
@@ -19,4 +17,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f"Error: {str(e)}")
-        return func.HttpResponse("Something went wrong", status_code=500)
+        return func.HttpResponse(f"Internal server error: {str(e)}", status_code=500)
